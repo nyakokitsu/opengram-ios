@@ -6,9 +6,12 @@ on:
 
   workflow_dispatch:
 
+env:
+  BAZEL_USER_ROOT: "/private/var/tmp/_bazel_containerhost"
+
 jobs:
   build:
-    runs-on: macos-26
+    runs-on: macos-15
 
     steps:
       - uses: actions/checkout@v2
@@ -27,15 +30,18 @@ jobs:
           cp -R $GITHUB_WORKSPACE /Users/Shared/
           mv /Users/Shared/$(basename $GITHUB_WORKSPACE) /Users/Shared/telegram-ios
 
+      - name: Bazel cache
+        uses: actions/cache@v3
+        with:
+           path: ${{ env.BAZEL_USER_ROOT }}
+           key: ${{ runner.os }}-bazel-cache
+
       - name: Build the App
         run: |
           set -x
 
           # source code paths are included in the final binary, so we need to make them stable across builds
           SOURCE_DIR=/Users/Shared/telegram-ios
-
-          # use canonical bazel root
-          BAZEL_USER_ROOT="/private/var/tmp/_bazel_containerhost"
 
           cd $SOURCE_DIR
 
